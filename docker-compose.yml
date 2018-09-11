@@ -13,6 +13,8 @@ services:
   development:
     build: ./development
     env_file: ./.env
+    environment:
+      - DEV_USER=takeda
     volumes:
       - ./development/works:/home/${DEV_USER}/works:cached
     links:
