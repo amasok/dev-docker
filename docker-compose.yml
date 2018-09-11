@@ -1,0 +1,50 @@
+version: '2'
+services:
+  # nginx:
+  #   build: ./nginx
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./development/works:/var/www/html:cached
+  #   links:
+  #     - development
+  #   container_name: ${PREFIX}_nginx
+
+  development:
+    build: ./development
+    env_file: ./.env
+    volumes:
+      - ./development/works:/home/${DEV_USER}/works:cached
+    links:
+      - mysql
+      - memcached
+      - redis
+      # - postgres
+    container_name: ${PREFIX}_development
+
+  memcached:
+    restart: always
+    image: memcached:1.5
+    container_name: ${PREFIX}_memcached
+
+  mysql:
+    restart: always
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "13306:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    container_name: ${PREFIX}_mysql
+    command: --innodb-use-native-aio=0
+
+  redis:
+    restart: always
+    image: redis:latest
+    volumes:
+      - ./redis/data:/data
+    command: redis-server --appendonly yes
+    container_name: ${PREFIX}_redis
