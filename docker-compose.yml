@@ -11,17 +11,21 @@ services:
   #   container_name: ${PREFIX}_nginx
 
   development:
+
     build: ./development
     env_file: ./.env
     environment:
       - DEV_USER=takeda
     volumes:
       - ./development/works:/home/${DEV_USER}/works:cached
+    ports:
+      - "8000:8000"
     links:
       - mysql
       - memcached
       - redis
       # - postgres
+    hostname: ${PREFIX}_docker
     container_name: ${PREFIX}_development
 
   memcached:

@@ -7,16 +7,22 @@ RUN echo ${DEV_USER}
 RUN apt-get update -y
 RUN chmod go+w,u+s /tmp
 
+# timezoneを日本に変更
+RUN apt-get install -y tzdata && \
+    ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 # package
-RUN apt-get install openssh-server zsh tmux build-essential -y
-RUN apt-get install wget unzip curl tree grep bison libssl-dev openssl zlib1g-dev -y
-RUN apt-get install locales locales-all
-RUN export LANG=en_US.UTF-8
-# db client
+
+RUN apt-get install openssh-server sudo zsh tmux build-essential -y
+RUN apt-get install wget unzip curl tree grep bison libssl-dev openssl zlib1g-dev fonts-powerline -y
+RUN apt-get install locales locales-all language-pack-ja-base language-pack-ja ibus-mozc -y
+RUN update-locale LANG=ja_JP.UTF-8 LANGUAGE=ja_JP:ja
+
+
+ #db client
 RUN apt-get install mysql-client redis-tools postgresql-client mongodb-clients -y
 
 #vim
-RUN apt-get install git mercurial gettext libncurses5-dev  libperl-dev python-dev python3-dev ruby-dev lua5.2 liblua5.2-dev luajit libluajit-5.1 -y
+RUN apt-get install git mercurial ctags gettext libncurses5-dev  libperl-dev python-dev python3-dev ruby-dev lua5.2 liblua5.2-dev luajit libluajit-5.1 -y
 RUN cd /tmp \
     && git clone https://github.com/vim/vim.git \
     && cd /tmp/vim \
@@ -40,21 +46,19 @@ WORKDIR /home/${DEV_USER}
 ENV HOME /home/${DEV_USER}
 
 # # dotfiles
-# RUN git clone https://github.com/amasok/dotfiles.git ~/dotfiles \
-#     && cd ~/dotfiles \
-#     && git checkout os/ubuntu \
-#     && zsh scripts/link.sh \
-#     && zsh scripts/zshenv.sh \
-#     && zsh scripts/tmux.sh \
-#     && zsh scripts/vimrc.sh \
+RUN git clone https://github.com/amasok/dotfiles.git ~/dotfiles \
+    && cd ~/dotfiles \
+    && git checkout os/ubuntu \
+    && zsh scripts/link.sh \
+    && zsh scripts/tmux.sh \
+    && zsh scripts/phpenv.sh 7.2.9 \
+    && zsh scripts/zshenv.sh
+    # && zsh scripts/vimrc.sh
 #     && zsh scripts/rbenv.sh 2.5.1 \
 #     && zsh scripts/pyenv.sh 3.7.0 \
-#     && zsh scripts/phpenv.sh 7.2.9 \
 #     $$ zsh scripts/gvm.sh 1.10.2 \
 
 RUN mkdir /home/${DEV_USER}/works
-
-# for ssh
 USER root
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
